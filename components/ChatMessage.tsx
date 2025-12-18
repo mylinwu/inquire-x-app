@@ -110,7 +110,7 @@ const styles = StyleSheet.create({
     justifyContent: "flex-start",
   },
   bubbleContainer: {
-    maxWidth: "85%",
+    maxWidth: "95%",
   },
   bubbleContainerUser: {
     alignItems: "flex-end",

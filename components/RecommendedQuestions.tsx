@@ -11,12 +11,12 @@ import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useCallback, useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    ScrollView,
-    StyleSheet,
-    TouchableOpacity,
-    useColorScheme,
-    View,
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  useColorScheme,
+  View,
 } from "react-native";
 
 interface RecommendedQuestionsProps {
@@ -51,7 +51,7 @@ export function RecommendedQuestions({ onSelect }: RecommendedQuestionsProps) {
     loadCachedQuestions();
   }, [settings.enableAIGeneratedQuestions]);
 
-  // 生成 AI 问题
+  // 生成 AI 问题（总是生成新问题并更新缓存）
   const generateQuestions = useCallback(async () => {
     if (!settings.apiKey || isGenerating) return;
 
@@ -63,17 +63,19 @@ export function RecommendedQuestions({ onSelect }: RecommendedQuestionsProps) {
       );
       if (questions && questions.length > 0) {
         setAiQuestions(questions);
+        // 更新缓存
         await AsyncStorage.setItem(STORAGE_KEYS.aiQuestions, JSON.stringify(questions));
       }
     } catch {
-      // 生成失败，使用默认问题
+      // 生成失败，保持当前问题
     } finally {
       setIsGenerating(false);
     }
   }, [settings, isGenerating]);
 
-  // 自动生成问题
+  // 自动生成问题（仅在没有缓存时）
   useEffect(() => {
+    // 只在启用AI生成、缓存已检查、没有缓存的问题、有API Key、且未在生成中时才生成
     if (settings.enableAIGeneratedQuestions && cacheChecked && aiQuestions.length === 0 && settings.apiKey && !isGenerating) {
       generateQuestions();
     }
@@ -213,12 +215,12 @@ const styles = StyleSheet.create({
   },
   questionCard: {
     padding: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: StyleSheet.hairlineWidth,
   },
   questionText: {
     fontSize: FontSize.sm,
-    lineHeight: 22,
+    lineHeight: 20,
   },
   refreshingContainer: {
     flexDirection: "row",
