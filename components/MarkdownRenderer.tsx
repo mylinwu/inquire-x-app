@@ -6,8 +6,8 @@ import { ThemedText } from "@/components/themed-text";
 import { PHASE_LABELS } from "@/config";
 import { BorderRadius, Colors, FontSize, Spacing } from "@/constants/theme";
 import type { ThinkingPhase } from "@/types";
-import React from "react";
-import { StyleSheet, useColorScheme, View } from "react-native";
+import React, { useEffect, useRef } from "react";
+import { Animated, StyleSheet, useColorScheme, View } from "react-native";
 import Markdown from "react-native-markdown-display";
 
 interface MarkdownRendererProps {
@@ -15,9 +15,47 @@ interface MarkdownRendererProps {
   isStreaming?: boolean;
 }
 
-export function MarkdownRenderer({ content, isStreaming: _isStreaming = false }: MarkdownRendererProps) {
+// 动画配置常量
+const FADE_ANIMATION_DURATION = 150;
+const FADE_INTERVAL = 80;
+
+export function MarkdownRenderer({ content, isStreaming = false }: MarkdownRendererProps) {
   const colorScheme = useColorScheme() ?? "light";
   const colors = Colors[colorScheme];
+  
+  // 动画值：用于渐入效果
+  const fadeAnim = useRef(new Animated.Value(1)).current;
+  const lastContentLength = useRef(content.length);
+  const animationTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  
+  // 当内容更新且正在流式输出时，触发渐入动画
+  useEffect(() => {
+    if (isStreaming && content.length > lastContentLength.current) {
+      // 清除之前的动画定时器
+      if (animationTimeout.current) {
+        clearTimeout(animationTimeout.current);
+      }
+      
+      // 短暂降低透明度然后渐入
+      fadeAnim.setValue(0.7);
+      
+      animationTimeout.current = setTimeout(() => {
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: FADE_ANIMATION_DURATION,
+          useNativeDriver: true,
+        }).start();
+      }, FADE_INTERVAL);
+    }
+    
+    lastContentLength.current = content.length;
+    
+    return () => {
+      if (animationTimeout.current) {
+        clearTimeout(animationTimeout.current);
+      }
+    };
+  }, [content, isStreaming, fadeAnim]);
 
   const markdownStyles = {
     body: {
@@ -121,9 +159,11 @@ export function MarkdownRenderer({ content, isStreaming: _isStreaming = false }:
   };
 
   return (
-    <Markdown style={markdownStyles}>
-      {content || " "}
-    </Markdown>
+    <Animated.View style={{ opacity: fadeAnim }}>
+      <Markdown style={markdownStyles}>
+        {content || " "}
+      </Markdown>
+    </Animated.View>
   );
 }
 

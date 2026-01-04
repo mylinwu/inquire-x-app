@@ -1,14 +1,13 @@
 /**
  * API 服务层
  * - 使用 @openrouter/ai-sdk-provider 和 AI SDK 处理所有 AI 请求
- * - generateText: 非流式文本生成（聊天、追问、推荐问题等）
+ * - 由于 React Native 环境限制，流式输出采用打字机模式模拟实现
  */
 
 import { OPENROUTER_API_URL, PHASE_PROMPTS } from "@/config";
 import type { Settings } from "@/types";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
-import type { LanguageModel } from "ai";
-import { generateText } from "ai";
+import { generateText, type LanguageModel } from "ai";
 
 // ============================================
 // 常量定义
@@ -38,7 +37,10 @@ function validateApiSettings(settings: Settings): void {
 /** 创建 OpenRouter 模型实例 */
 function createModel(settings: Settings): LanguageModel {
   validateApiSettings(settings);
-  const openrouter = createOpenRouter({ apiKey: settings.apiKey });
+  const openrouter = createOpenRouter({
+    apiKey: settings.apiKey,
+    fetch: global.fetch,
+  });
   return openrouter(settings.model);
 }
 
@@ -101,7 +103,7 @@ function buildSystemPrompt(
   // 添加用户称呼
   if (settings.username) {
     prompt = prompt.replace(/{username}/g, settings.username);
-    prompt = `你可以称呼我为"${settings.username}"。\n\n${prompt}`;
+    prompt = `你可以称呼用户为"${settings.username}"。\n\n${prompt}`;
   }
   
   // 添加当前时间
@@ -115,8 +117,9 @@ function buildSystemPrompt(
 }
 
 /**
- * 发送聊天请求（非流式）
- * 注：使用 generateText 以确保 React Native 兼容性
+ * 发送聊天请求
+ * 在 React Native 环境中，由于 fetch 不支持 ReadableStream，
+ * 我们采用全量获取后模拟流式输出的方案，以确保稳定性和 UI 体验。
  */
 export async function streamChat(
   messages: ChatMessage[],
@@ -128,12 +131,12 @@ export async function streamChat(
     const model = createModel(settings);
     const systemPrompt = buildSystemPrompt(settings, phase);
 
-    console.log("[streamChat] 发送请求:", {
+    console.log("[streamChat] 发送请求 (模拟流式):", {
       model: settings.model,
-      temperature: settings.temperature,
       messageCount: messages.length,
     });
 
+    // 使用 generateText 获取全量文本，避免 React Native Fetch 流错误
     const result = await generateText({
       model,
       system: systemPrompt,
@@ -141,7 +144,22 @@ export async function streamChat(
       temperature: settings.temperature,
     });
 
-    callbacks.onText(result.text);
+    const fullText = result.text;
+    
+    // 模拟流式输出（打字机效果）
+    if (fullText) {
+      const chars = fullText.split("");
+      
+      for (let i = 0; i < chars.length; i++) {
+        callbacks.onText(chars[i]);
+        
+        // 控制输出速度，每 5 个字符微小停顿，平衡流畅度与性能
+        if (i % 5 === 0) {
+          await new Promise((resolve) => setTimeout(resolve, 10));
+        }
+      }
+    }
+
     callbacks.onComplete?.();
   } catch (error) {
     const message = error instanceof Error ? error.message : "请求失败";

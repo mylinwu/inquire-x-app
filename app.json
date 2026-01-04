@@ -15,9 +15,8 @@
     "android": {
       "package": "com.inquirex.app",
       "adaptiveIcon": {
-        "backgroundColor": "#6366f1",
+        "backgroundColor": "#e2cdb2",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
@@ -35,7 +34,7 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff",
+          "backgroundColor": "#e2cdb2",
           "dark": {
             "backgroundColor": "#000000"
           }

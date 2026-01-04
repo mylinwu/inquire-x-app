@@ -46,7 +46,7 @@ export function ChatList({
       style={styles.container}
       contentContainerStyle={styles.contentContainer}
       onScroll={handleScroll}
-      scrollEventThrottle={16}
+      scrollEventThrottle={200}
       showsVerticalScrollIndicator={false}
     >
       {messages.map((message, index) => (
