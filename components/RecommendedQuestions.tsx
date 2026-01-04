@@ -215,12 +215,12 @@ const styles = StyleSheet.create({
   },
   questionCard: {
     padding: Spacing.md,
-    borderRadius: BorderRadius.sm,
+    borderRadius: 6,
     borderWidth: StyleSheet.hairlineWidth,
   },
   questionText: {
     fontSize: FontSize.sm,
-    lineHeight: 20,
+    lineHeight: 18,
   },
   refreshingContainer: {
     flexDirection: "row",

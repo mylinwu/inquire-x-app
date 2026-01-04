@@ -47,7 +47,10 @@ export function ChatMessage({
           )}
 
           {isUser ? (
-            <ThemedText style={[styles.userText, { color: colors.bubbleUserText }]}>
+            <ThemedText 
+              style={[styles.userText, { color: colors.bubbleUserText }]}
+              selectable={true}
+            >
               {message.content}
             </ThemedText>
           ) : (
@@ -154,9 +157,11 @@ const styles = StyleSheet.create({
   followUpButton: {
     paddingVertical: 6,
     paddingHorizontal: Spacing.sm,
-    borderRadius: BorderRadius.full,
+    borderRadius: 8,
   },
   followUpText: {
+    paddingVertical: 4,
     fontSize: FontSize.xs,
-  },
+    lineHeight: 16,
+  }
 });

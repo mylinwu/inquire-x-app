@@ -41,6 +41,7 @@ interface AppState {
   // 会话操作
   createConversation: () => string;
   deleteConversation: (id: string) => void;
+  clearAllConversations: () => void;
   setCurrentConversation: (id: string | null) => void;
   
   // 消息操作
@@ -95,6 +96,12 @@ export const useAppStore = create<AppState>()(
           conversations: state.conversations.filter((c) => c.id !== id),
           currentConversationId:
             state.currentConversationId === id ? null : state.currentConversationId,
+        })),
+
+      clearAllConversations: () =>
+        set((state) => ({
+          conversations: [],
+          currentConversationId: null,
         })),
 
       setCurrentConversation: (id) => {

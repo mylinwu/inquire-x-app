@@ -39,6 +39,7 @@ export function MenuPanel({ isOpen, onClose, onOpenSettings }: MenuPanelProps) {
     currentConversationId,
     setCurrentConversation,
     deleteConversation,
+    clearAllConversations,
   } = useAppStore();
 
   const handleSelectConversation = (id: string) => {
@@ -56,6 +57,26 @@ export function MenuPanel({ isOpen, onClose, onOpenSettings }: MenuPanelProps) {
           text: "删除",
           style: "destructive",
           onPress: () => deleteConversation(id),
+        },
+      ]
+    );
+  };
+
+  const handleClearAll = () => {
+    if (conversations.length === 0) return;
+    
+    Alert.alert(
+      "清空所有记录",
+      "确定清空所有历史记录吗？此操作不可撤销。",
+      [
+        { text: "取消", style: "cancel" },
+        {
+          text: "清空",
+          style: "destructive",
+          onPress: () => {
+            clearAllConversations();
+            onClose();
+          },
         },
       ]
     );
@@ -95,13 +116,24 @@ export function MenuPanel({ isOpen, onClose, onOpenSettings }: MenuPanelProps) {
             <Ionicons name="time-outline" size={18} color={colors.text} style={{ opacity: 0.8 }} />
             <ThemedText style={styles.headerTitle}>历史记录</ThemedText>
           </View>
-          <TouchableOpacity
-            onPress={onClose}
-            style={styles.closeButton}
-            activeOpacity={0.7}
-          >
-            <Ionicons name="close" size={18} color={colors.mutedForeground} />
-          </TouchableOpacity>
+          <View style={styles.headerRight}>
+            {conversations.length > 0 && (
+              <TouchableOpacity
+                onPress={handleClearAll}
+                style={styles.clearButton}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="trash-outline" size={16} color={colors.mutedForeground} />
+              </TouchableOpacity>
+            )}
+            <TouchableOpacity
+              onPress={onClose}
+              style={styles.closeButton}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="close" size={18} color={colors.mutedForeground} />
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* 会话列表 */}
@@ -204,6 +236,14 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: FontSize.sm,
     fontWeight: "500",
+  },
+  headerRight: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.sm,
+  },
+  clearButton: {
+    padding: 6,
   },
   closeButton: {
     padding: 6,
