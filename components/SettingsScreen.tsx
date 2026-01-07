@@ -125,11 +125,7 @@ export function SettingsScreen({ isOpen, onClose }: SettingsScreenProps) {
       presentationStyle="pageSheet"
       onRequestClose={onClose}
     >
-      <KeyboardAvoidingView
-        style={styles.container}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
-      >
+      <View style={styles.container}>
         <View style={[styles.container, { backgroundColor: colors.background }]}>
           {/* 头部 */}
           <View
@@ -293,7 +289,7 @@ export function SettingsScreen({ isOpen, onClose }: SettingsScreenProps) {
                 placeholder="定义 AI 的行为和角色..."
                 placeholderTextColor={colors.mutedForeground}
                 multiline
-                numberOfLines={4}
+                numberOfLines={8}
                 style={[inputStyle, styles.textArea]}
                 textAlignVertical="top"
                 onFocus={() => scrollToInput("systemPrompt")}
@@ -312,7 +308,7 @@ export function SettingsScreen({ isOpen, onClose }: SettingsScreenProps) {
                 placeholder="定义如何生成追问..."
                 placeholderTextColor={colors.mutedForeground}
                 multiline
-                numberOfLines={3}
+                numberOfLines={8}
                 style={[inputStyle, styles.textArea]}
                 textAlignVertical="top"
                 onFocus={() => scrollToInput("followUpPrompt")}
@@ -333,7 +329,7 @@ export function SettingsScreen({ isOpen, onClose }: SettingsScreenProps) {
                   setLocalSettings({ ...localSettings, recommendedQuestions: text.split("\n") })
                 }
                 multiline
-                numberOfLines={5}
+                numberOfLines={8}
                 style={[inputStyle, styles.textArea]}
                 textAlignVertical="top"
                 onFocus={() => scrollToInput("recommendedQuestions")}
@@ -369,7 +365,7 @@ export function SettingsScreen({ isOpen, onClose }: SettingsScreenProps) {
             </TouchableOpacity>
           </View>
         </View>
-      </KeyboardAvoidingView>
+      </View>
 
       {/* 模型选择器 */}
       <Modal visible={showModelPicker} animationType="slide" transparent>
