@@ -105,7 +105,7 @@ export function MenuPanel({ isOpen, onClose, onOpenSettings }: MenuPanelProps) {
           {
             backgroundColor: colors.background,
             borderRightColor: colors.border,
-            paddingTop: insets.top,
+            paddingTop: 0,
             paddingBottom: insets.bottom,
           },
         ]}
