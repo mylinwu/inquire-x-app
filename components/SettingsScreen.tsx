@@ -13,7 +13,9 @@ import React, { useCallback, useEffect, useState } from "react";
 import {
     ActivityIndicator,
     Alert,
+    KeyboardAvoidingView,
     Modal,
+    Platform,
     ScrollView,
     StyleSheet,
     Switch,
@@ -64,6 +66,19 @@ export function SettingsScreen({ isOpen, onClose }: SettingsScreenProps) {
     }
   }, [localSettings.apiKey, isOpen, loadModels]);
 
+  const scrollViewRef = React.useRef<ScrollView>(null);
+  const inputLayoutsRef = React.useRef<Record<string, number>>({});
+
+  const handleInputLayout = useCallback((key: string, y: number) => {
+    inputLayoutsRef.current[key] = y;
+  }, []);
+
+  const scrollToInput = useCallback((key: string) => {
+    const y = inputLayoutsRef.current[key];
+    if (y == null) return;
+    scrollViewRef.current?.scrollTo({ y: Math.max(0, y - Spacing.md), animated: true });
+  }, []);
+
   const handleSave = () => {
     updateSettings({
       ...localSettings,
@@ -110,62 +125,77 @@ export function SettingsScreen({ isOpen, onClose }: SettingsScreenProps) {
       presentationStyle="pageSheet"
       onRequestClose={onClose}
     >
-      <View style={[styles.container, { backgroundColor: colors.background }]}>
-        {/* 头部 */}
-        <View
-          style={[
-            styles.header,
-            {
-              backgroundColor: colors.background,
-              borderBottomColor: colors.border,
-              paddingTop: insets.top + Spacing.sm,
-            },
-          ]}
-        >
-          <ThemedText style={styles.headerTitle}>设置</ThemedText>
-          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <Ionicons name="close" size={24} color={colors.text} />
-          </TouchableOpacity>
-        </View>
-
-        {/* 内容 */}
-        <ScrollView
-          style={styles.content}
-          contentContainerStyle={styles.contentContainer}
-          showsVerticalScrollIndicator={false}
-        >
-          {/* 用户名 */}
-          <View style={styles.section}>
-            <ThemedText style={styles.sectionTitle}>用户名称</ThemedText>
-            <TextInput
-              value={localSettings.username}
-              onChangeText={(text) => setLocalSettings({ ...localSettings, username: text })}
-              placeholder="输入你的昵称"
-              placeholderTextColor={colors.mutedForeground}
-              style={inputStyle}
-            />
-            <ThemedText style={[styles.hint, { color: colors.mutedForeground }]}>
-              AI 可在对话中通过 {"{username}"} 引用此名称
-            </ThemedText>
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
+      >
+        <View style={[styles.container, { backgroundColor: colors.background }]}>
+          {/* 头部 */}
+          <View
+            style={[
+              styles.header,
+              {
+                backgroundColor: colors.background,
+                borderBottomColor: colors.border,
+                paddingTop: insets.top + Spacing.sm,
+              },
+            ]}
+          >
+            <ThemedText style={styles.headerTitle}>设置</ThemedText>
+            <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+              <Ionicons name="close" size={24} color={colors.text} />
+            </TouchableOpacity>
           </View>
 
-          {/* API Key */}
-          <View style={styles.section}>
-            <ThemedText style={styles.sectionTitle}>OpenRouter API Key</ThemedText>
-            <TextInput
-              value={localSettings.apiKey}
-              onChangeText={(text) => setLocalSettings({ ...localSettings, apiKey: text })}
-              placeholder="sk-or-..."
-              placeholderTextColor={colors.mutedForeground}
-              secureTextEntry
-              autoCapitalize="none"
-              autoCorrect={false}
-              style={[inputStyle, { fontFamily: "monospace" }]}
-            />
-            <ThemedText style={[styles.hint, { color: colors.mutedForeground }]}>
-              从 openrouter.ai 获取密钥
-            </ThemedText>
-          </View>
+          {/* 内容 */}
+          <ScrollView
+            ref={scrollViewRef}
+            style={styles.content}
+            contentContainerStyle={styles.contentContainer}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+          >
+            {/* 用户名 */}
+            <View
+              style={styles.section}
+              onLayout={(e) => handleInputLayout("username", e.nativeEvent.layout.y)}
+            >
+              <ThemedText style={styles.sectionTitle}>用户名称</ThemedText>
+              <TextInput
+                value={localSettings.username}
+                onChangeText={(text) => setLocalSettings({ ...localSettings, username: text })}
+                placeholder="输入你的昵称"
+                placeholderTextColor={colors.mutedForeground}
+                style={inputStyle}
+                onFocus={() => scrollToInput("username")}
+              />
+              <ThemedText style={[styles.hint, { color: colors.mutedForeground }]}>
+                AI 可在对话中通过 {"{username}"} 引用此名称
+              </ThemedText>
+            </View>
+
+            {/* API Key */}
+            <View
+              style={styles.section}
+              onLayout={(e) => handleInputLayout("apiKey", e.nativeEvent.layout.y)}
+            >
+              <ThemedText style={styles.sectionTitle}>OpenRouter API Key</ThemedText>
+              <TextInput
+                value={localSettings.apiKey}
+                onChangeText={(text) => setLocalSettings({ ...localSettings, apiKey: text })}
+                placeholder="sk-or-..."
+                placeholderTextColor={colors.mutedForeground}
+                secureTextEntry
+                autoCapitalize="none"
+                autoCorrect={false}
+                style={[inputStyle, { fontFamily: "monospace" }]}
+                onFocus={() => scrollToInput("apiKey")}
+              />
+              <ThemedText style={[styles.hint, { color: colors.mutedForeground }]}>
+                从 openrouter.ai 获取密钥
+              </ThemedText>
+            </View>
 
           {/* 模型选择 */}
           <View style={styles.section}>
@@ -224,7 +254,7 @@ export function SettingsScreen({ isOpen, onClose }: SettingsScreenProps) {
             <View style={styles.switchContent}>
               <ThemedText style={styles.switchTitle}>三段式思考流程</ThemedText>
               <ThemedText style={[styles.switchHint, { color: colors.mutedForeground }]}>
-                AI 将进行"思考 → 质疑 → 打磨"的深度推理
+                AI 将进行&quot;思考 → 质疑 → 打磨&quot;的深度推理
               </ThemedText>
             </View>
             <Switch
@@ -251,80 +281,95 @@ export function SettingsScreen({ isOpen, onClose }: SettingsScreenProps) {
 
           <View style={styles.divider} />
 
-          {/* 系统提示词 */}
-          <View style={styles.section}>
-            <ThemedText style={styles.sectionTitle}>AI 人设提示词</ThemedText>
-            <TextInput
-              value={localSettings.systemPrompt}
-              onChangeText={(text) => setLocalSettings({ ...localSettings, systemPrompt: text })}
-              placeholder="定义 AI 的行为和角色..."
-              placeholderTextColor={colors.mutedForeground}
-              multiline
-              numberOfLines={4}
-              style={[inputStyle, styles.textArea]}
-              textAlignVertical="top"
-            />
-          </View>
+            {/* 系统提示词 */}
+            <View
+              style={styles.section}
+              onLayout={(e) => handleInputLayout("systemPrompt", e.nativeEvent.layout.y)}
+            >
+              <ThemedText style={styles.sectionTitle}>AI 人设提示词</ThemedText>
+              <TextInput
+                value={localSettings.systemPrompt}
+                onChangeText={(text) => setLocalSettings({ ...localSettings, systemPrompt: text })}
+                placeholder="定义 AI 的行为和角色..."
+                placeholderTextColor={colors.mutedForeground}
+                multiline
+                numberOfLines={4}
+                style={[inputStyle, styles.textArea]}
+                textAlignVertical="top"
+                onFocus={() => scrollToInput("systemPrompt")}
+              />
+            </View>
 
-          {/* 追问提示词 */}
-          <View style={styles.section}>
-            <ThemedText style={styles.sectionTitle}>追问生成提示词</ThemedText>
-            <TextInput
-              value={localSettings.followUpPrompt}
-              onChangeText={(text) => setLocalSettings({ ...localSettings, followUpPrompt: text })}
-              placeholder="定义如何生成追问..."
-              placeholderTextColor={colors.mutedForeground}
-              multiline
-              numberOfLines={3}
-              style={[inputStyle, styles.textArea]}
-              textAlignVertical="top"
-            />
-          </View>
+            {/* 追问提示词 */}
+            <View
+              style={styles.section}
+              onLayout={(e) => handleInputLayout("followUpPrompt", e.nativeEvent.layout.y)}
+            >
+              <ThemedText style={styles.sectionTitle}>追问生成提示词</ThemedText>
+              <TextInput
+                value={localSettings.followUpPrompt}
+                onChangeText={(text) => setLocalSettings({ ...localSettings, followUpPrompt: text })}
+                placeholder="定义如何生成追问..."
+                placeholderTextColor={colors.mutedForeground}
+                multiline
+                numberOfLines={3}
+                style={[inputStyle, styles.textArea]}
+                textAlignVertical="top"
+                onFocus={() => scrollToInput("followUpPrompt")}
+              />
+            </View>
 
-          {/* 推荐问题 */}
-          <View style={styles.section}>
-            <ThemedText style={styles.sectionTitle}>
-              {localSettings.enableAIGeneratedQuestions ? "参考问题风格 (每行一个)" : "推荐问题 (每行一个)"}
-            </ThemedText>
-            <TextInput
-              value={localSettings.recommendedQuestions.join("\n")}
-              onChangeText={(text) => setLocalSettings({ ...localSettings, recommendedQuestions: text.split("\n") })}
-              multiline
-              numberOfLines={5}
-              style={[inputStyle, styles.textArea]}
-              textAlignVertical="top"
-            />
-          </View>
+            {/* 推荐问题 */}
+            <View
+              style={styles.section}
+              onLayout={(e) => handleInputLayout("recommendedQuestions", e.nativeEvent.layout.y)}
+            >
+              <ThemedText style={styles.sectionTitle}>
+                {localSettings.enableAIGeneratedQuestions ? "参考问题风格 (每行一个)" : "推荐问题 (每行一个)"}
+              </ThemedText>
+              <TextInput
+                value={localSettings.recommendedQuestions.join("\n")}
+                onChangeText={(text) =>
+                  setLocalSettings({ ...localSettings, recommendedQuestions: text.split("\n") })
+                }
+                multiline
+                numberOfLines={5}
+                style={[inputStyle, styles.textArea]}
+                textAlignVertical="top"
+                onFocus={() => scrollToInput("recommendedQuestions")}
+              />
+            </View>
 
-          <View style={{ height: Spacing.xl }} />
-        </ScrollView>
+            <View style={{ height: Spacing.xl }} />
+          </ScrollView>
 
-        {/* 底部按钮 */}
-        <View
-          style={[
-            styles.footer,
-            {
-              backgroundColor: colors.background,
-              borderTopColor: colors.border,
-              paddingBottom: Math.max(insets.bottom, Spacing.md),
-            },
-          ]}
-        >
-          <TouchableOpacity onPress={handleReset} style={styles.resetButton}>
-            <ThemedText style={[styles.resetText, { color: colors.error }]}>重置默认</ThemedText>
-          </TouchableOpacity>
-          <View style={styles.footerSpacer} />
-          <TouchableOpacity onPress={onClose} style={styles.cancelButton}>
-            <ThemedText style={[styles.cancelText, { color: colors.mutedForeground }]}>取消</ThemedText>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={handleSave}
-            style={[styles.saveButton, { backgroundColor: colors.primary }]}
+          {/* 底部按钮 */}
+          <View
+            style={[
+              styles.footer,
+              {
+                backgroundColor: colors.background,
+                borderTopColor: colors.border,
+                paddingBottom: Math.max(insets.bottom, Spacing.md),
+              },
+            ]}
           >
-            <ThemedText style={[styles.saveText, { color: colors.primaryForeground }]}>保存更改</ThemedText>
-          </TouchableOpacity>
+            <TouchableOpacity onPress={handleReset} style={styles.resetButton}>
+              <ThemedText style={[styles.resetText, { color: colors.error }]}>重置默认</ThemedText>
+            </TouchableOpacity>
+            <View style={styles.footerSpacer} />
+            <TouchableOpacity onPress={onClose} style={styles.cancelButton}>
+              <ThemedText style={[styles.cancelText, { color: colors.mutedForeground }]}>取消</ThemedText>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={handleSave}
+              style={[styles.saveButton, { backgroundColor: colors.primary }]}
+            >
+              <ThemedText style={[styles.saveText, { color: colors.primaryForeground }]}>保存更改</ThemedText>
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
+      </KeyboardAvoidingView>
 
       {/* 模型选择器 */}
       <Modal visible={showModelPicker} animationType="slide" transparent>

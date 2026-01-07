@@ -8,8 +8,6 @@ import { useThemeColor } from "@/hooks/use-theme-color";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useCallback, useState } from "react";
 import {
-    KeyboardAvoidingView,
-    Platform,
     StyleSheet,
     TextInput,
     TouchableOpacity,
@@ -49,64 +47,59 @@ export function ChatInput({
   const canSend = value.trim().length > 0 && !disabled;
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
+    <View
+      style={[
+        styles.container,
+        {
+          backgroundColor,
+          borderTopColor: borderColor,
+          paddingBottom: Math.max(insets.bottom, Spacing.sm),
+        },
+      ]}
     >
-      <View
-        style={[
-          styles.container,
-          {
-            backgroundColor,
-            borderTopColor: borderColor,
-            paddingBottom: Math.max(insets.bottom, Spacing.sm),
-          },
-        ]}
-      >
-        <View style={[styles.inputWrapper, { backgroundColor: cardColor, borderColor }]}>
-          <TextInput
-            value={value}
-            onChangeText={setValue}
-            placeholder={placeholder}
-            placeholderTextColor={mutedColor}
-            editable={!disabled}
-            multiline
-            maxLength={4000}
-            style={[
-              styles.input,
-              {
-                color: textColor,
-                opacity: disabled ? 0.5 : 1,
-                fontFamily: "monospace",
-              },
-            ]}
-            onSubmitEditing={handleSend}
-            blurOnSubmit={false}
+      <View style={[styles.inputWrapper, { backgroundColor: cardColor, borderColor }]}>
+        <TextInput
+          value={value}
+          onChangeText={setValue}
+          placeholder={placeholder}
+          placeholderTextColor={mutedColor}
+          editable={!disabled}
+          multiline
+          maxLength={4000}
+          style={[
+            styles.input,
+            {
+              color: textColor,
+              opacity: disabled ? 0.5 : 1,
+              fontFamily: "monospace",
+            },
+          ]}
+          onSubmitEditing={handleSend}
+          blurOnSubmit={false}
+        />
+        <TouchableOpacity
+          onPress={handleSend}
+          disabled={!canSend}
+          style={[
+            styles.sendButton,
+            {
+              backgroundColor: canSend ? primaryColor : mutedColor,
+              opacity: canSend ? 1 : 0.3,
+            },
+          ]}
+          activeOpacity={0.7}
+        >
+          <Ionicons
+            name="arrow-up"
+            size={18}
+            color="#ffffff"
           />
-          <TouchableOpacity
-            onPress={handleSend}
-            disabled={!canSend}
-            style={[
-              styles.sendButton,
-              {
-                backgroundColor: canSend ? primaryColor : mutedColor,
-                opacity: canSend ? 1 : 0.3,
-              },
-            ]}
-            activeOpacity={0.7}
-          >
-            <Ionicons
-              name="arrow-up"
-              size={18}
-              color="#ffffff"
-            />
-          </TouchableOpacity>
-        </View>
-        <ThemedText style={styles.disclaimer}>
-          AI 内容由模型生成，请仔细甄别
-        </ThemedText>
+        </TouchableOpacity>
       </View>
-    </KeyboardAvoidingView>
+      <ThemedText style={styles.disclaimer}>
+        AI 内容由模型生成，请仔细甄别
+      </ThemedText>
+    </View>
   );
 }
 

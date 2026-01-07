@@ -13,7 +13,7 @@ import { Colors, Spacing } from "@/constants/theme";
 import { useChat } from "@/hooks/useChat";
 import { useAppStore, useCurrentConversation } from "@/store";
 import React, { useCallback } from "react";
-import { StyleSheet, useColorScheme, View } from "react-native";
+import { KeyboardAvoidingView, Platform, StyleSheet, useColorScheme, View } from "react-native";
 
 export default function HomeScreen() {
   const colorScheme = useColorScheme() ?? "light";
@@ -76,7 +76,11 @@ export default function HomeScreen() {
         onNewChat={handleNewChat}
       />
 
-      <View style={styles.main}>
+      <KeyboardAvoidingView
+        style={styles.main}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 56 : 0}
+      >
         {showEmptyState ? (
           <RecommendedQuestions onSelect={handleSelectQuestion} />
         ) : (
@@ -100,7 +104,7 @@ export default function HomeScreen() {
           onSend={handleSendMessage}
           disabled={isStreaming}
         />
-      </View>
+      </KeyboardAvoidingView>
 
       <MenuPanel
         isOpen={isMenuOpen}
