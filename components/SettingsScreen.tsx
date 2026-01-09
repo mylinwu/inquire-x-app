@@ -134,7 +134,7 @@ export function SettingsScreen({ isOpen, onClose }: SettingsScreenProps) {
               {
                 backgroundColor: colors.background,
                 borderBottomColor: colors.border,
-                paddingTop: insets.top,
+                paddingTop: insets.top + Spacing.sm,
               },
             ]}
           >
